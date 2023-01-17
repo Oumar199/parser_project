@@ -1,3 +1,4 @@
+from parser_package.utils.np_chunks import contains_subtree
 import nltk
 import sys
 
@@ -15,7 +16,7 @@ V -> "smiled" | "tell" | "were"
 """
 
 NONTERMINALS = """
-S -> NP PP | NP VP | S Conj S
+S -> NP | NP VP | S Conj S
 PP -> P NP
 NP -> N | Det N | Det Adj N | NP Adv | NP PP | NP Conj NP 
 VP -> V | V V | VP Adv | VP NP | VP PP | VP Conj VP
@@ -67,8 +68,11 @@ def preprocess(sentence):
     and removing any word that does not contain at least one alphabetic
     character.
     """
+    # the goal is to tokenize the given sentence and recuperate them if their are composed
+    # by alphanumerical characters and if it is the case then transform to lower case
     tokens = [token.lower() for token in nltk.word_tokenize(sentence) if token.isalpha()]
     
+    # return a list of tokens
     return tokens
 
 
@@ -79,7 +83,38 @@ def np_chunk(tree):
     whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
     """
-    return []
+    # initialize the list of chunks
+    chunks = []
+    
+    for tree_ in list(tree.subtrees()):
+        
+        # recuperate the label
+        label = tree_.label()
+        
+        # if it is the searched label then
+        if label == 'NP':
+        
+            """ 
+            J'ai écris la fonction suivante au niveau du fichier python dont le chemin figure comme suit:
+
+            parer_package/utils/np_chunk.py
+
+            La fonction a été importé en haut du fichier parser.py.
+            
+            Cette fonction nous permet de savoir si un arbre syntaxique contient un chunk dont le label est spécifié en para-
+            -mètre. Cela nous permettra de savoir si on doit ajouter ou non un chunk parmi la liste des np chunks de notre programme.
+            """
+
+            # verify if the subtree contains subtrees with the same label
+            non_unique = contains_subtree(tree_, 'NP')
+            
+            # it it is not the case then add a new chunk to the bunch of chunks
+            if not non_unique:
+                
+                chunks.append(tree_)
+    
+    # return the bunch of chunks
+    return chunks
 
 
 if __name__ == "__main__":
